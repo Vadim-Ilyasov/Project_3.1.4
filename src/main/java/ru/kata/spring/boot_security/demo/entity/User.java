@@ -15,10 +15,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import java.util.ArrayList;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.Pattern;
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+
 
 
 @Entity
@@ -33,9 +33,11 @@ public class User implements UserDetails {
 
     @Column(name = "surname")
     private String surname;
-    @Column(name = "age")
-    private Integer age;
 
+    @Min(value = 1, message = "Age should be greater than 0")
+    @Column(name = "age")
+    private Byte age;
+    @Pattern(message = "Bad formed email", regexp = "^[A-Za-z0-9]+@(.+)$")
     @Column(name = "email")
     private String email;
     @Column(unique = true, name = "username")
@@ -43,26 +45,26 @@ public class User implements UserDetails {
 
     @Column(name = "password")
     private String password;
-    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",
             joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "roles_id")}
     )
 
-    private List<Role> roles = new ArrayList<>();
+    private Collection<Role> roles;
 
     public User() {
 
     }
 
 
-    public User(String name, String surname, Integer age, String email,  String username, String password) {
+    public User(String name, String surname, Byte age, String email, Collection<Role> roles, String username, String password) {
         this.name = name;
         this.surname = surname;
         this.age = age;
         this.email = email;
-//        this.roles = roles;
+        this.roles = roles;
         this.username = username;
         this.password = password;
     }
@@ -86,11 +88,11 @@ public class User implements UserDetails {
         this.surname = surname;
     }
 
-    public Integer getAge() {
+    public Byte getAge() {
         return age;
     }
 
-    public void setAge(int age) {
+    public void setAge(byte age) {
         this.age = age;
     }
 
@@ -119,11 +121,11 @@ public class User implements UserDetails {
         this.username = username;
     }
 
-    public List<Role> getRoles() {
+    public Collection<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<Role> roles) {
+    public void setRoles(Collection<Role> roles) {
         this.roles = roles;
     }
 

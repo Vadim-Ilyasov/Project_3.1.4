@@ -1,6 +1,6 @@
 package ru.kata.spring.boot_security.demo.service;
 
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,35 +11,31 @@ import java.util.List;
 
 
 @Service
-@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, @Lazy PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
     @Override
+    @Transactional
     public User findByUsername(String username) {
-        if (userRepository.findByUsername(username).isEmpty()) {
-            throw new UsernameNotFoundException("Пользователь с таким именем не найден");
-        }
-        return userRepository.findByUsername(username).get();
+        return userRepository.findByUsername(username);
     }
 
     @Override
+    @Transactional
     public User findUserById(Long id) {
-        if (userRepository.findById(id).isEmpty()) {
-            throw new UsernameNotFoundException("Пользователь с таким ID не найден");
-        }
         return userRepository.findById(id).get();
     }
 
@@ -47,11 +43,11 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void updateUser(User updateUser, Long id) {
-        User user_from_DB = userRepository.findById(id).get(); //Нашли в БД, кого хотим редактировать
+        User user_from_DB = userRepository.findById(id).get();
         user_from_DB.setUsername(updateUser.getUsername());
-        user_from_DB.setName(updateUser.getName()); //сохраняет
-        user_from_DB.setAge(updateUser.getAge()); //сохраняет
-        user_from_DB.setEmail(updateUser.getEmail()); //сохраняет
+        user_from_DB.setName(updateUser.getName());
+        user_from_DB.setAge(updateUser.getAge());
+        user_from_DB.setEmail(updateUser.getEmail());
         user_from_DB.setRoles(updateUser.getRoles());
 
         if (user_from_DB.getPassword().equals(updateUser.getPassword())) {
